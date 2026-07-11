@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZipLoot - Serverless PDF Toolset</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Syne:wght@700;800&family=Space+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(255, 255, 255, 0.02);
+      --border: rgba(255, 255, 255, 0.05);
+      --primary: #818cf8;
+      --success: #10b981;
+      --text: #cbd5e1;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 15, 25, 0.8);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #818cf8 0%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      margin: 40px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .tab {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab.active {
+      color: #fff;
+      background: rgba(129, 140, 248, 0.1);
+      border: 1px solid rgba(129, 140, 248, 0.2);
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 30px;
+    }
+    .upload-zone {
+      border: 2px dashed rgba(129, 140, 248, 0.3);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+    .upload-zone:hover {
+      border-color: var(--primary);
+      background: rgba(129, 140, 248, 0.02);
+    }
+    .upload-zone h3 { font-family: 'Syne', sans-serif; font-size: 18px; margin-bottom: 8px; color: #fff; }
+    .upload-zone p { font-size: 13px; color: #64748b; }
+    
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #94a3b8; }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #818cf8 0%, #10b981 100%);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(129, 140, 248, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(129, 140, 248, 0.4); }
+    
+    .file-list {
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 14px;
+    }
+    .file-item {
+      padding: 10px;
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+  <!-- Load PDF-Lib safely from CDN -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">⚡ ZIPLOOT PDF</div>
+  </header>
+  
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('merge')">Merge PDFs</button>
+      <button class="tab" onclick="switchTab('split')">Split Pages</button>
+      <button class="tab" onclick="switchTab('watermark')">Watermark</button>
+    </div>
+
+    <!-- MERGE SECTION -->
+    <div id="mergeSection" class="card">
+      <h2>📁 Merge Multiple PDF Files</h2>
+      <div class="upload-zone" onclick="document.getElementById('mergeInput').click()">
+        <input type="file" id="mergeInput" multiple accept="application/pdf" style="display: none;" onchange="handleMergeFiles(this.files)" />
+        <h3>Click or Drag PDFs to Merge</h3>
+        <p>Combine multiple PDF documents into a single file completely client-side</p>
+      </div>
+      <div class="file-list" id="mergeFilesList"></div>
+      <button class="btn" onclick="processMerge()">MERGE AND DOWNLOAD</button>
+    </div>
+
+    <!-- SPLIT SECTION -->
+    <div id="splitSection" class="card" style="display: none;">
+      <h2>✂️ Extract/Split PDF Pages</h2>
+      <div class="upload-zone" onclick="document.getElementById('splitInput').click()">
+        <input type="file" id="splitInput" accept="application/pdf" style="display: none;" onchange="handleSplitFile(this.files[0])" />
+        <h3>Select PDF to Split</h3>
+        <p id="splitFileName">No file selected</p>
+      </div>
+      <label>Page Range to Extract (e.g. 1-3, 5, 8)</label>
+      <input type="text" id="splitRange" placeholder="e.g. 1-3, 5" />
+      <button class="btn" onclick="processSplit()">EXTRACT AND DOWNLOAD</button>
+    </div>
+
+    <!-- WATERMARK SECTION -->
+    <div id="watermarkSection" class="card" style="display: none;">
+      <h2>✍️ Add Text Watermark to PDF</h2>
+      <div class="upload-zone" onclick="document.getElementById('watermarkInput').click()">
+        <input type="file" id="watermarkInput" accept="application/pdf" style="display: none;" onchange="handleWatermarkFile(this.files[0])" />
+        <h3>Select PDF to Watermark</h3>
+        <p id="watermarkFileName">No file selected</p>
+      </div>
+      <label>Watermark Text</label>
+      <input type="text" id="watermarkText" placeholder="CONFIDENTIAL, DRAFT, etc." />
+      
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div>
+          <label>Font Size</label>
+          <input type="number" id="watermarkSize" value="45" />
+        </div>
+        <div>
+          <label>Opacity (0.1 to 1.0)</label>
+          <input type="text" id="watermarkOpacity" value="0.3" />
+        </div>
+      </div>
+      <button class="btn" onclick="processWatermark()">APPLY WATERMARK</button>
+    </div>
+  </div>
+
+  <script>
+    let mergeFiles = [];
+    let splitFile = null;
+    let watermarkFile = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('mergeSection').style.display = tabId === 'merge' ? 'block' : 'none';
+      document.getElementById('splitSection').style.display = tabId === 'split' ? 'block' : 'none';
+      document.getElementById('watermarkSection').style.display = tabId === 'watermark' ? 'block' : 'none';
+    }
+
+    // MERGE LOGIC
+    function handleMergeFiles(files) {
+      for (let file of files) {
+        mergeFiles.push(file);
+      }
+      renderMergeList();
+    }
+
+    function renderMergeList() {
+      const list = document.getElementById("mergeFilesList");
+      list.innerHTML = "";
+      mergeFiles.forEach((file, idx) => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.innerHTML = `
+          <span>📄 ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+          <button class="btn-delete" style="background:none; border:none; color:#ef4444; cursor:pointer;" onclick="removeMergeFile(${idx})">Remove</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function removeMergeFile(idx) {
+      mergeFiles.splice(idx, 1);
+      renderMergeList();
+    }
+
+    async function processMerge() {
+      if (mergeFiles.length < 2) {
+        alert("Please add at least 2 PDF files to merge.");
+        return;
+      }
+
+      try {
+        const { PDFDocument } = PDFLib;
+        const mergedPdf = await PDFDocument.create();
+
+        for (let file of mergeFiles) {
+          const bytes = await file.arrayBuffer();
+          const pdf = await PDFDocument.load(bytes);
+          const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+        }
+
+        const mergedPdfBytes = await mergedPdf.save();
+        downloadFile(mergedPdfBytes, "merged_document.pdf");
+      } catch (err) {
+        alert("Error merging PDFs: " + err.toString());
+      }
+    }
+
+    // SPLIT LOGIC
+    function handleSplitFile(file) {
+      if (file) {
+        splitFile = file;
+        document.getElementById("splitFileName").textContent = `Selected: ${file.name}`;
+      }
+    }
+
+    async function processSplit() {
+      const rangeStr = document.getElementById("splitRange").value.trim();
+      if (!splitFile || !rangeStr) {
+        alert("Please select a PDF file and enter the page range.");
+        return;
+      }
+
+      try {
+        const { PDFDocument } = PDFLib;
+        const bytes = await splitFile.arrayBuffer();
+        const pdf = await PDFDocument.load(bytes);
+        const totalPages = pdf.getPageCount();
+
+        const pagesToExtract = parsePageRange(rangeStr, totalPages);
+        if (pagesToExtract.length === 0) {
+          alert("Invalid page range specified.");
+          return;
+        }
+
+        const newPdf = await PDFDocument.create();
+        const copiedPages = await newPdf.copyPages(pdf, pagesToExtract.map(p => p - 1));
+        copiedPages.forEach((page) => newPdf.addPage(page));
+
+        const newPdfBytes = await newPdf.save();
+        downloadFile(newPdfBytes, "extracted_pages.pdf");
+      } catch (err) {
+        alert("Error splitting PDF: " + err.toString());
+      }
+    }
+
+    function parsePageRange(rangeStr, totalPages) {
+      const pages = [];
+      const parts = rangeStr.split(",");
+      for (let part of parts) {
+        if (part.includes("-")) {
+          const rangeParts = part.split("-");
+          const start = parseInt(rangeParts[0].trim(), 10);
+          const end = parseInt(rangeParts[1].trim(), 10);
+          if (!isNaN(start) && !isNaN(end)) {
+            for (let i = start; i <= end; i++) {
+              if (i > 0 && i <= totalPages) pages.push(i);
+            }
+          }
+        } else {
+          const p = parseInt(part.trim(), 10);
+          if (!isNaN(p) && p > 0 && p <= totalPages) {
+            pages.push(p);
+          }
+        }
+      }
+      return [...new Set(pages)].sort((a, b) => a - b);
+    }
+
+    // WATERMARK LOGIC
+    function handleWatermarkFile(file) {
+      if (file) {
+        watermarkFile = file;
+        document.getElementById("watermarkFileName").textContent = `Selected: ${file.name}`;
+      }
+    }
+
+    async function processWatermark() {
+      const text = document.getElementById("watermarkText").value.trim();
+      const size = parseInt(document.getElementById("watermarkSize").value, 10);
+      const opacity = parseFloat(document.getElementById("watermarkOpacity").value);
+
+      if (!watermarkFile || !text) {
+        alert("Please select a PDF file and enter the watermark text.");
+        return;
+      }
+
+      try {
+        const { PDFDocument, rgb, StandardFonts, degrees } = PDFLib;
+        const bytes = await watermarkFile.arrayBuffer();
+        const pdf = await PDFDocument.load(bytes);
+        const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+        const pages = pdf.getPages();
+        for (let page of pages) {
+          const { width, height } = page.getSize();
+          
+          // Draw watermark text diagonally across page center
+          page.drawText(text, {
+            x: width / 2 - (text.length * (size / 4)),
+            y: height / 2,
+            size: size,
+            font: font,
+            color: rgb(0.7, 0.7, 0.7),
+            opacity: isNaN(opacity) ? 0.3 : opacity,
+            rotate: degrees(45),
+          });
+        }
+
+        const watermarkedPdfBytes = await pdf.save();
+        downloadFile(watermarkedPdfBytes, "watermarked_document.pdf");
+      } catch (err) {
+        alert("Error applying watermark: " + err.toString());
+      }
+    }
+
+    // File Downloader helper
+    function downloadFile(bytes, name) {
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = name;
+      link.click();
+    }
+  </script>
+</body>
+</html>
