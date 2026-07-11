@@ -5,7 +5,7 @@ Clear-Host
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host "   ⚡ ZIPLOOT SERVERLESS PDF TOOLSET INSTALLER" -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "   100% Client-Side | Zero Server Caps | $0 Hosting" -ForegroundColor Green
+Write-Host "   100% Client-Side | Zero Server Caps | \`$0 Hosting" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host
 
@@ -31,7 +31,7 @@ Write-Host
 Write-Host "==============================================" -ForegroundColor Cyan
 Write-Host "⚡ OPTION 1: 1-Click Cloud Deployment (Vercel - Free Hosting)" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "The easiest way! Deploy to Vercel in 10 seconds for $0:"
+Write-Host "The easiest way! Deploy to Vercel in 10 seconds for \`$0:"
 Write-Host "1. The script will open the Vercel 1-Click deploy page."
 Write-Host "2. Connect your GitHub/Vercel account and click Deploy."
 Write-Host
