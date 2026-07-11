@@ -1,0 +1,8 @@
+{
+  "name": "unlimited-pdf-toolset",
+  "version": "1.0.0",
+  "description": "Serverless Client-Side PDF Editor & Toolset (Merge, Split, Watermark) on Vercel",
+  "scripts": {
+    "start": "npx serve ."
+  }
+}
