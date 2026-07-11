@@ -1,35 +1,66 @@
-# ZipLoot Windows 1-Click Serverless PDF Toolset Setup
-try {
-    Write-Host "==============================================" -ForegroundColor Green
-    Write-Host "[ZipLoot] PDF Toolset Installer" -ForegroundColor Green
-    Write-Host "==============================================" -ForegroundColor Green
+# [ZipLoot] Serverless PDF Toolset Installer
+# ==============================================
 
-    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+Clear-Host
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "   ⚡ ZIPLOOT SERVERLESS PDF TOOLSET INSTALLER" -ForegroundColor Cyan
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "   100% Client-Side | Zero Server Caps | $0 Hosting" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host
 
-    # Create project folder locally in the user's CURRENT directory
-    $projectFolder = Join-Path $pwd "unlimited-pdf-toolset-project"
-    if (Test-Path $projectFolder) {
-        Write-Host "[WARN] Folder 'unlimited-pdf-toolset-project' already exists." -ForegroundColor Yellow
-    } else {
-        New-Item -ItemType Directory -Path $projectFolder -ErrorAction SilentlyContinue | Out-Null
-    }
+$ProjectFolder = "unlimited-pdf-toolset-project"
 
-    # Copy template files
-    Copy-Item -Path "$scriptDir\\index.html" -Destination "$projectFolder\\index.html" -Force
-    Copy-Item -Path "$scriptDir\\vercel.json" -Destination "$projectFolder\\vercel.json" -Force
-    Copy-Item -Path "$scriptDir\\package.json" -Destination "$projectFolder\\package.json" -Force
-
-    Write-Host "[SUCCESS] Local files generated!" -ForegroundColor Green
-    Write-Host "--------------------------------------------------------" -ForegroundColor Green
-    Write-Host "To host this on Vercel for free ($0):" -ForegroundColor Yellow
-    Write-Host "1. Create a free account on Vercel." -ForegroundColor Yellow
-    Write-Host "2. Link your GitHub account." -ForegroundColor Yellow
-    Write-Host "3. Push the files in $projectFolder to your GitHub repo." -ForegroundColor Yellow
-    Write-Host "4. Import the repo to Vercel. It deploys instantly as a static website!" -ForegroundColor Green
-    Write-Host "--------------------------------------------------------" -ForegroundColor Green
+# Step 1: Clone/Prepare project locally if needed
+if (Test-Path $ProjectFolder) {
+    Write-Host "[WARN] Folder '$ProjectFolder' already exists." -ForegroundColor Yellow
+} else {
+    Write-Host "[INFO] Creating folder '$ProjectFolder'..." -ForegroundColor Blue
+    New-Item -ItemType Directory -Path $ProjectFolder -Force | Out-Null
     
-    Read-Host "`nSetup completed. Press Enter to exit..."
-} catch {
-    Write-Host "[ERROR] An unexpected error occurred: $_" -ForegroundColor Red
-    Read-Host "Press Enter to exit..."
+    # Download files from GitHub
+    Write-Host "[INFO] Downloading project files from GitHub..." -ForegroundColor Blue
+    $BaseUrl = "https://raw.githubusercontent.com/Ziploot/unlimited-pdf-toolset/main"
+    
+    Invoke-WebRequest -Uri "$BaseUrl/index.html" -OutFile "$ProjectFolder/index.html" -UserAgent "Mozilla/5.0"
+    Invoke-WebRequest -Uri "$BaseUrl/package.json" -OutFile "$ProjectFolder/package.json" -UserAgent "Mozilla/5.0"
+    Invoke-WebRequest -Uri "$BaseUrl/vercel.json" -OutFile "$ProjectFolder/vercel.json" -UserAgent "Mozilla/5.0"
 }
+
+Write-Host
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "⚡ OPTION 1: 1-Click Cloud Deployment (Vercel - Free Hosting)" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "The easiest way! Deploy to Vercel in 10 seconds for $0:"
+Write-Host "1. The script will open the Vercel 1-Click deploy page."
+Write-Host "2. Connect your GitHub/Vercel account and click Deploy."
+Write-Host
+
+$choice1 = Read-Host "[INPUT] Do you want to open the 1-Click Vercel Deployment page now? (Y/N)"
+if ($choice1 -eq 'y' -or $choice1 -eq 'Y') {
+    Write-Host "[INFO] Opening deployment page in browser..." -ForegroundColor Green
+    Start-Process "https://vercel.com/new/clone?repository-url=https://github.com/Ziploot/unlimited-pdf-toolset"
+}
+
+Write-Host
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "⚡ OPTION 2: Run Locally (Instant Browser Editor)" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "Since the PDF Toolset is 100% client-side, you don't even need a server!"
+Write-Host "We can open the app directly in your default browser."
+Write-Host
+
+$choice2 = Read-Host "[INPUT] Do you want to open the PDF Toolset locally in your browser now? (Y/N)"
+if ($choice2 -eq 'y' -or $choice2 -eq 'Y') {
+    Write-Host "[INFO] Opening local index.html..." -ForegroundColor Green
+    $FullPath = Resolve-Path "$ProjectFolder/index.html"
+    Start-Process $FullPath
+}
+
+Write-Host
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "🎉 INSTALLATION COMPLETE!" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan
+Write-Host "Your files are saved in: $(Resolve-Path $ProjectFolder)" -ForegroundColor Blue
+Write-Host "Thanks for using ZipLoot!" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Cyan
